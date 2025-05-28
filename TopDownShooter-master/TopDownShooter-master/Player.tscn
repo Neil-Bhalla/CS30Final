@@ -61,3 +61,6 @@ cast_to = Vector2( 2000, 0 )
 
 [node name="AnimatedSprite" type="AnimatedSprite" parent="."]
 frames = SubResource( 2 )
+
+[node name="Camera2D" type="Camera2D" parent="."]
+current = true
