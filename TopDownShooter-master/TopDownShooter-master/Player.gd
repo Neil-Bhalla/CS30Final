@@ -1,8 +1,10 @@
 extends KinematicBody2D
 
 const MOVE_SPEED = 300
+const BULLET_SCENE = preload("res://Bullet.tscn")
 
 onready var raycast = $RayCast2D
+onready var anim = $AnimatedSprite
 
 func _ready():
 	yield(get_tree(), "idle_frame")
@@ -20,14 +22,26 @@ func _physics_process(delta):
 		move_vec.x += 1
 	move_vec = move_vec.normalized()
 	move_and_collide(move_vec * MOVE_SPEED * delta)
-	
-	var look_vec = get_global_mouse_position() - global_position
-	global_rotation = atan2(look_vec.y, look_vec.x)
-	
+
+	if move_vec != Vector2.ZERO:
+		if not anim.is_playing():
+			anim.play("walk")
+	else:
+		anim.stop()
+		anim.frame = 0
+
+	if move_vec.x != 0:
+		anim.flip_h = move_vec.x < 0
+
+	var to_mouse = get_global_mouse_position() - global_position
+	raycast.rotation = to_mouse.angle()
+
 	if Input.is_action_just_pressed("shoot"):
-		var coll = raycast.get_collider()
-		if raycast.is_colliding() and coll.has_method("kill"):
-			coll.kill()
+		var bullet = BULLET_SCENE.instance()
+		bullet.global_position = global_position
+		bullet.velocity = to_mouse.normalized() * 800
+		bullet.shooter = self
+		get_parent().add_child(bullet)
 
 func kill():
 	get_tree().reload_current_scene()
